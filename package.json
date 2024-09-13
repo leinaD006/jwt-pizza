@@ -21,5 +21,22 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.3"
+  },
+  "prettier": {
+    "tabWidth": 4,
+    "overrides": [
+      {
+        "files": "*.yml",
+        "options": {
+          "tabWidth": 2
+        }
+      },
+      {
+        "files": "*.json",
+        "options": {
+          "tabWidth": 2
+        }
+      }
+    ]
   }
 }
