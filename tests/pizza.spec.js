@@ -11,6 +11,11 @@ test("about page", async ({ page }) => {
     await expect(page.getByRole("main")).toContainText("The secret sauce");
 });
 
+test("history page", async ({ page }) => {
+    await page.goto("/history");
+    await expect(page.getByRole("heading")).toContainText("Mama Rucci, my my");
+});
+
 
 test("purchase with login", async ({ page }) => {
     await page.route("*/**/api/order/menu", async (route) => {
