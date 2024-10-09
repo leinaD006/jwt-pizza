@@ -21,6 +21,12 @@ test("404 page", async ({ page }) => {
     await expect(page.getByRole("heading")).toContainText("Oops");
 });
 
+test("docs page", async ({ page }) => {
+    await page.goto("/docs");
+    await expect(page.getByRole("heading")).toContainText("JWT Pizza API");
+});
+
+
 test("purchase with login", async ({ page }) => {
     await page.route("*/**/api/order/menu", async (route) => {
         const menuRes = [
