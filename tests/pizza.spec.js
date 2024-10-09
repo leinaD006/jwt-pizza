@@ -23,7 +23,7 @@ test("404 page", async ({ page }) => {
 
 test("docs page", async ({ page }) => {
     await page.goto("/docs");
-    await expect(page.getByRole("heading")).toContainText("JWT Pizza API");
+    await expect(page.getByRole("main")).toContainText("JWT Pizza API");
 });
 
 test("register", async ({ page }) => {
