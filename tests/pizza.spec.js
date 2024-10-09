@@ -27,6 +27,31 @@ test("docs page", async ({ page }) => {
 });
 
 test("register", async ({ page }) => {
+    await page.route("*/**/api/auth", async (route) => {
+        const registerReq = {
+            name: "test",
+            email: "test@test.com",
+            password: "test",
+        };
+        const registerRes = {
+            user: {
+                name: "test",
+                email: "test@test.com",
+                roles: [
+                    {
+                        role: "diner",
+                    },
+                ],
+                id: 497,
+            },
+            token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdEB0ZXN0LmNvbSIsInJvbGVzIjpbeyJyb2xlIjoiZGluZXIifV0sImlkIjo0OTcsImlhdCI6MTcyODQ0NzI3M30.NWLuORcU_pm0TouEOYh3BgOe27Qct_zC9z53ZetDu9k",
+        };
+
+        expect(route.request().method()).toBe("POST");
+        expect(route.request().postDataJSON()).toMatchObject(registerReq);
+        await route.fulfill({ json: registerRes });
+    });
+
     await page.goto("/register");
     await page.getByPlaceholder("Full Name").fill("test");
     await page.getByPlaceholder("Email address").fill("test@test.com");
@@ -35,8 +60,65 @@ test("register", async ({ page }) => {
     await expect(
         page.getByRole("link", { name: "t", exact: true })
     ).toBeVisible();
-    await page.getByRole("link", { name: "Logout" }).click();
-    await page.getByRole("link", { name: "Login" }).click();
+});
+
+test("logout", async ({ page }) => {
+    await page.route("*/**/api/auth", async (route) => {
+        const logoutRes = {
+            message: "logout successful",
+        };
+        expect(route.request().method()).toBe("DELETE");
+        await route.fulfill({ json: logoutRes });
+    });
+
+    await page.goto("/");
+    await page.evaluate(() => {
+        localStorage.setItem(
+            "user",
+            JSON.stringify({
+                id: 58,
+                name: "test",
+                email: "test@test.com",
+                roles: [{ role: "diner" }],
+            })
+        );
+        localStorage.setItem(
+            "token",
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTgsIm5hbWUiOiJ0ZXN0IiwiZW1haWwiOiJ0ZXN0QHRlc3QuY29tIiwicm9sZXMiOlt7InJvbGUiOiJkaW5lciJ9XSwiaWF0IjoxNzI4NDQ3MzI1fQ.2iY3itzQ6CbXuiGIq0W_Ack4EDJD1gLWubyYSSMRQKw"
+        );
+    });
+    await page.reload();
+
+    await page.goto("/logout");
+    await expect(page.getByRole("link", { name: "Login" })).toBeVisible();
+});
+
+test("login", async ({ page }) => {
+    await page.route("*/**/api/auth", async (route) => {
+        const loginReq = {
+            email: "test@test.com",
+            password: "test",
+        };
+        const loginRes = {
+            user: {
+                id: 58,
+                name: "test",
+                email: "test@test.com",
+                roles: [
+                    {
+                        role: "diner",
+                    },
+                ],
+            },
+            token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NTgsIm5hbWUiOiJ0ZXN0IiwiZW1haWwiOiJ0ZXN0QHRlc3QuY29tIiwicm9sZXMiOlt7InJvbGUiOiJkaW5lciJ9XSwiaWF0IjoxNzI4NDQ3MzI1fQ.2iY3itzQ6CbXuiGIq0W_Ack4EDJD1gLWubyYSSMRQKw",
+        };
+
+        expect(route.request().method()).toBe("PUT");
+        expect(route.request().postDataJSON()).toMatchObject(loginReq);
+        await route.fulfill({ json: loginRes });
+    });
+
+    await page.goto("/login");
     await page.getByPlaceholder("Email address").click();
     await page.getByPlaceholder("Email address").fill("test@test.com");
     await page.getByPlaceholder("Email address").press("Tab");
