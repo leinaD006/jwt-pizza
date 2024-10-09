@@ -26,6 +26,26 @@ test("docs page", async ({ page }) => {
     await expect(page.getByRole("heading")).toContainText("JWT Pizza API");
 });
 
+test("register", async ({ page }) => {
+    await page.goto("/register");
+    await page.getByPlaceholder("Full Name").fill("test");
+    await page.getByPlaceholder("Email address").fill("test@test.com");
+    await page.getByPlaceholder("Password").fill("test");
+    await page.getByRole("button", { name: "Register" }).click();
+    await expect(
+        page.getByRole("link", { name: "t", exact: true })
+    ).toBeVisible();
+    await page.getByRole("link", { name: "Logout" }).click();
+    await page.getByRole("link", { name: "Login" }).click();
+    await page.getByPlaceholder("Email address").click();
+    await page.getByPlaceholder("Email address").fill("test@test.com");
+    await page.getByPlaceholder("Email address").press("Tab");
+    await page.getByPlaceholder("Password").fill("test");
+    await page.getByRole("button", { name: "Login" }).click();
+    await expect(
+        page.getByRole("link", { name: "t", exact: true })
+    ).toBeVisible();
+});
 
 test("purchase with login", async ({ page }) => {
     await page.route("*/**/api/order/menu", async (route) => {
