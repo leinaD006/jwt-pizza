@@ -16,6 +16,10 @@ test("history page", async ({ page }) => {
     await expect(page.getByRole("heading")).toContainText("Mama Rucci, my my");
 });
 
+test("404 page", async ({ page }) => {
+    await page.goto("/notapage");
+    await expect(page.getByRole("heading")).toContainText("Oops");
+});
 
 test("purchase with login", async ({ page }) => {
     await page.route("*/**/api/order/menu", async (route) => {
