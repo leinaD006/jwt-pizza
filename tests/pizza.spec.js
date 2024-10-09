@@ -251,3 +251,36 @@ test("purchase with login", async ({ page }) => {
     // Check balance
     await expect(page.getByText("0.008")).toBeVisible();
 });
+
+test("admin", async ({ page }) => {
+    await page.route("*/**/api/auth", async (route) => {
+        const loginReq = {
+            email: "a@jwt.com",
+            password: "admin",
+        };
+        const loginRes = {
+            user: {
+                id: 1,
+                name: "常用名字",
+                email: "a@jwt.com",
+                roles: [
+                    {
+                        role: "admin",
+                    },
+                ],
+            },
+            token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IuW4uOeUqOWQjeWtlyIsImVtYWlsIjoiYUBqd3QuY29tIiwicm9sZXMiOlt7InJvbGUiOiJhZG1pbiJ9XSwiaWF0IjoxNzI4NDQ5NzQ1fQ.rA00FD3s2SIsTxk4x_dMwG0UTSIm8cPq_kQSBophSnQ",
+        };
+
+        expect(route.request().method()).toBe("PUT");
+        expect(route.request().postDataJSON()).toMatchObject(loginReq);
+        await route.fulfill({ json: loginRes });
+    });
+
+    await page.goto("/login");
+    await page.getByPlaceholder("Email address").fill("a@jwt.com");
+    await page.getByPlaceholder("Password").click();
+    await page.getByPlaceholder("Password").fill("admin");
+    await page.getByRole("button", { name: "Login" }).click();
+    await page.getByRole("link", { name: "Admin" }).click();
+});
