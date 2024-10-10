@@ -252,7 +252,7 @@ test("purchase with login", async ({ page }) => {
     await expect(page.getByText("0.008")).toBeVisible();
 });
 
-test("admin", async ({ page }) => {
+test("admin and franchise", async ({ page }) => {
     await page.route("*/**/api/auth", async (route) => {
         const loginReq = {
             email: "a@jwt.com",
@@ -277,10 +277,94 @@ test("admin", async ({ page }) => {
         await route.fulfill({ json: loginRes });
     });
 
+    // Mock for franchise API
+    let callCount = 0;
+    await page.route("*/**/api/franchise", async (route) => {
+        callCount++;
+        const method = route.request().method();
+        const postData = route.request().postDataJSON();
+
+        switch (callCount) {
+            case 1:
+                const getFranchiseRes1 = [];
+                expect(method).toBe("GET");
+                await route.fulfill({ json: getFranchiseRes1 });
+
+                break;
+            case 2:
+                const createFranchiseReq = {
+                    stores: [],
+                    name: "test pizza",
+                    admins: [
+                        {
+                            email: "a@jwt.com",
+                        },
+                    ],
+                };
+                const createFranchiseRes = {
+                    stores: [],
+                    name: "test pizza",
+                    admins: [
+                        {
+                            email: "a@jwt.com",
+                            id: 1,
+                            name: "常用名字",
+                        },
+                    ],
+                    id: 35,
+                };
+
+                expect(method).toBe("POST");
+                expect(postData).toMatchObject(createFranchiseReq);
+                await route.fulfill({ json: createFranchiseRes });
+
+                break;
+
+            case 3:
+                const getFranchiseRes2 = [
+                    {
+                        id: 35,
+                        name: "test pizza",
+                        admins: [
+                            {
+                                id: 1,
+                                name: "常用名字",
+                                email: "a@jwt.com",
+                            },
+                        ],
+                        stores: [],
+                    },
+                ];
+
+                expect(method).toBe("GET");
+                await route.fulfill({ json: getFranchiseRes2 });
+
+                break;
+
+            case 4:
+                const closeFranchiseRes = { message: "franchise deleted" };
+
+                expect(method).toBe("DELETE");
+                expect(postData).toMatchObject({ id: 35 });
+                await route.fulfill({ json: closeFranchiseRes });
+
+                break;
+        }
+    });
+
     await page.goto("/login");
     await page.getByPlaceholder("Email address").fill("a@jwt.com");
     await page.getByPlaceholder("Password").click();
     await page.getByPlaceholder("Password").fill("admin");
     await page.getByRole("button", { name: "Login" }).click();
     await page.getByRole("link", { name: "Admin" }).click();
+    await page.getByRole("button", { name: "Add Franchise" }).click();
+    await page.getByPlaceholder("franchise name").fill("test pizza");
+    await page.getByPlaceholder("franchisee admin email").fill("a@jwt.com");
+    await page.getByRole("button", { name: "Create" }).click();
+    await page
+        .getByRole("row", { name: "test pizza 常用名字 Close" })
+        .getByRole("button")
+        .click();
+    await page.getByRole("button", { name: "Close" }).click();
 });
