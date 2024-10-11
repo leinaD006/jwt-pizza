@@ -22,6 +22,24 @@ test("404 page", async ({ page }) => {
 });
 
 test("docs page", async ({ page }) => {
+    await page.goto("/");
+    await page.evaluate(() => {
+        localStorage.setItem(
+            "user",
+            JSON.stringify({
+                id: 1,
+                name: "常用名字",
+                email: "a@jwt.com",
+                roles: [{ role: "admin" }, { role: "franchisee" }],
+            })
+        );
+        localStorage.setItem(
+            "token",
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IuW4uOeUqOWQjeWtlyIsImVtYWlsIjoiYUBqd3QuY29tIiwicm9sZXMiOlt7InJvbGUiOiJhZG1pbiJ9XSwiaWF0IjoxNzI4NTczNDM0fQ.EqzgT2VgRSzVct4r1x6dba2qF7qolxSz6NSgEpoX_3U"
+        );
+    });
+    await page.reload();
+
     await page.goto("/docs");
     await expect(page.getByRole("main")).toContainText("JWT Pizza API");
 });
