@@ -368,3 +368,143 @@ test("admin and franchise", async ({ page }) => {
         .click();
     await page.getByRole("button", { name: "Close" }).click();
 });
+
+test("store", async ({ page }) => {
+    let callCount = 0;
+    await page.route("*/**/api/franchise/**", async (route) => {
+        callCount++;
+        const method = route.request().method();
+        const postData = route.request().postDataJSON();
+
+        const url = new URL(route.request().url()).pathname;
+
+        switch (callCount) {
+            case 1:
+                const franchiseDashboardRes = [
+                    {
+                        id: 35,
+                        name: "test pizza",
+                        admins: [
+                            {
+                                id: 1,
+                                name: "常用名字",
+                                email: "a@jwt.com",
+                            },
+                        ],
+                        stores: [],
+                    },
+                ];
+
+                expect(method).toBe("GET");
+                expect(url).toBe("/api/franchise/1");
+                await route.fulfill({ json: franchiseDashboardRes });
+
+                break;
+            case 2:
+                const createStoreReq = {
+                    name: "test store",
+                };
+                const createStoreRes = {
+                    id: 28,
+                    franchiseId: 35,
+                    name: "test store",
+                };
+
+                expect(method).toBe("POST");
+                expect(postData).toMatchObject(createStoreReq);
+                expect(url).toBe("/api/franchise/35/store");
+                await route.fulfill({ json: createStoreRes });
+
+                break;
+
+            case 3:
+                const franchiseDashboardRes2 = [
+                    {
+                        id: 35,
+                        name: "test pizza",
+                        admins: [
+                            {
+                                id: 1,
+                                name: "常用名字",
+                                email: "a@jwt.com",
+                            },
+                        ],
+                        stores: [
+                            {
+                                id: 28,
+                                name: "test store",
+                                totalRevenue: 0,
+                            },
+                        ],
+                    },
+                ];
+
+                expect(method).toBe("GET");
+                expect(url).toBe("/api/franchise/1");
+                await route.fulfill({ json: franchiseDashboardRes2 });
+
+                break;
+
+            case 4:
+                const closeStoreRes = { message: "store deleted" };
+
+                expect(method).toBe("DELETE");
+                expect(url).toBe("/api/franchise/35/store/28");
+                await route.fulfill({ json: closeStoreRes });
+
+                break;
+
+            case 5:
+                const franchiseDashboardRes3 = [
+                    {
+                        id: 36,
+                        name: "test pizza",
+                        admins: [
+                            {
+                                id: 1,
+                                name: "常用名字",
+                                email: "a@jwt.com",
+                            },
+                        ],
+                        stores: [],
+                    },
+                ];
+
+                expect(method).toBe("GET");
+                expect(url).toBe("/api/franchise/1");
+                await route.fulfill({ json: franchiseDashboardRes3 });
+
+                break;
+        }
+    });
+
+    await page.goto("/");
+    await page.evaluate(() => {
+        localStorage.setItem(
+            "user",
+            JSON.stringify({
+                id: 1,
+                name: "常用名字",
+                email: "a@jwt.com",
+                roles: [{ role: "admin" }],
+            })
+        );
+        localStorage.setItem(
+            "token",
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IuW4uOeUqOWQjeWtlyIsImVtYWlsIjoiYUBqd3QuY29tIiwicm9sZXMiOlt7InJvbGUiOiJhZG1pbiJ9XSwiaWF0IjoxNzI4NTczNDM0fQ.EqzgT2VgRSzVct4r1x6dba2qF7qolxSz6NSgEpoX_3U"
+        );
+    });
+    await page.reload();
+
+    await page.goto("/franchise-dashboard");
+    await expect(page.getByRole("heading")).toContainText("test pizza");
+    await page.getByRole("button", { name: "Create store" }).click();
+
+    await page.getByPlaceholder("store name").fill("test store");
+    await page.getByRole("button", { name: "Create" }).click();
+    await expect(page.locator("tbody")).toContainText("test store");
+    await page.getByRole("button", { name: "Close" }).click();
+    await page.getByRole("button", { name: "Close" }).click();
+    await expect(page.locator("tbody")).not.toContainText("test store");
+});
+
