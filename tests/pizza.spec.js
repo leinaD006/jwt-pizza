@@ -508,3 +508,25 @@ test("store", async ({ page }) => {
     await expect(page.locator("tbody")).not.toContainText("test store");
 });
 
+test("diner", async ({ page }) => {
+    await page.goto("/");
+    await page.evaluate(() => {
+        localStorage.setItem(
+            "user",
+            JSON.stringify({
+                id: 1,
+                name: "常用名字",
+                email: "a@jwt.com",
+                roles: [{ role: "admin" }],
+            })
+        );
+        localStorage.setItem(
+            "token",
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IuW4uOeUqOWQjeWtlyIsImVtYWlsIjoiYUBqd3QuY29tIiwicm9sZXMiOlt7InJvbGUiOiJhZG1pbiJ9XSwiaWF0IjoxNzI4NTczNDM0fQ.EqzgT2VgRSzVct4r1x6dba2qF7qolxSz6NSgEpoX_3U"
+        );
+    });
+    await page.reload();
+
+    await page.goto("/diner-dashboard");
+    await expect(page.getByRole("main")).toContainText("常用名字");
+});
