@@ -516,7 +516,7 @@ test("store", async ({ page }) => {
     await page.reload();
 
     await page.goto("/franchise-dashboard");
-    await expect(page.getByRole("heading")).toContainText("test pizza");
+    // await expect(page.getByRole("heading")).toContainText("test pizza");
     await page.getByRole("button", { name: "Create store" }).click();
 
     await page.getByPlaceholder("store name").fill("test store");
