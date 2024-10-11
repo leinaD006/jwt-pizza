@@ -475,7 +475,7 @@ test("store", async ({ page }) => {
             case 5:
                 const franchiseDashboardRes3 = [
                     {
-                        id: 36,
+                        id: 35,
                         name: "test pizza",
                         admins: [
                             {
