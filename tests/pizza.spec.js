@@ -1,3 +1,4 @@
+import { url } from "inspector";
 import { expect, test } from "playwright-test-coverage";
 
 test("home page", async ({ page }) => {
@@ -363,7 +364,7 @@ test("admin and franchise", async ({ page }) => {
                 const closeFranchiseRes = { message: "franchise deleted" };
 
                 expect(method).toBe("DELETE");
-                expect(postData).toMatchObject({ id: 35 });
+                expect(url).toBe("/api/franchise/35");
                 await route.fulfill({ json: closeFranchiseRes });
 
                 break;
