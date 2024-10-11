@@ -528,6 +528,32 @@ test("store", async ({ page }) => {
 });
 
 test("diner", async ({ page }) => {
+    page.route("*/**/api/order", async (route) => {
+        expect(route.request().method()).toBe("GET");
+        await route.fulfill({
+            json: {
+                dinerId: 1,
+                orders: [
+                    {
+                        id: 1,
+                        franchiseId: 1,
+                        storeId: 1,
+                        date: "2024-10-11T00:49:02.000Z",
+                        items: [
+                            {
+                                id: 1,
+                                menuId: 1,
+                                description: "Veggie",
+                                price: 0.0038,
+                            },
+                        ],
+                    },
+                ],
+                page: 1,
+            },
+        });
+    });
+
     await page.goto("/");
     await page.evaluate(() => {
         localStorage.setItem(
@@ -548,4 +574,5 @@ test("diner", async ({ page }) => {
 
     await page.goto("/diner-dashboard");
     await expect(page.getByRole("main")).toContainText("常用名字");
+    await expect(page.locator("tbody")).toContainText("1");
 });
