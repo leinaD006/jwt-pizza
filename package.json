@@ -33,7 +33,7 @@
     "react-router-dom": "^6.22.3"
   },
   "prettier": {
-    "tabWidth": 4,
+    "tabWidth": 2,
     "overrides": [
       {
         "files": "*.yml",
